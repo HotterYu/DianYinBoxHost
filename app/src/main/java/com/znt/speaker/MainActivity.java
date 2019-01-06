@@ -10,21 +10,29 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.qihoo360.replugin.RePlugin;
 import com.qihoo360.replugin.model.PluginInfo;
 import com.znt.speaker.permission.PermissionHelper;
+import com.znt.speaker.update.ApkDownLoadManager;
+import com.znt.speaker.update.ApkDownloadListener;
+import com.znt.speaker.update.DownloadFileInfo;
 import com.zyao89.view.zloading.ZLoadingView;
 import com.zyao89.view.zloading.Z_TYPE;
 
 import java.io.File;
 
-public class MainActivity extends AppCompatActivity implements permission.PermissionInterface {
+public class MainActivity extends AppCompatActivity implements permission.PermissionInterface ,ApkDownloadListener {
 
     private String pluginName = "com.znt.speaker";
 
@@ -33,13 +41,25 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     private PermissionHelper mPermissionHelper;
 
     private  ZLoadingView zLoadingView = null;
+    private TextView tvStatus = null;
+    private Button btnLoad = null;
+
+    private Handler mHandler = new Handler()
+    {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ZLoadingView zLoadingView = (ZLoadingView) findViewById(R.id.loadingView_1);
+        tvStatus = (TextView) findViewById(R.id.tv_loading_status);
+        btnLoad = (Button) findViewById(R.id.btn_start);
+        zLoadingView = (ZLoadingView) findViewById(R.id.loadingView_1);
         zLoadingView.setLoadingBuilder(Z_TYPE.MUSIC_PATH);//设置类型
         // zLoadingView.setLoadingBuilder(Z_TYPE.values()[type], 0.5); //设置类型 + 动画时间百分比 - 0.5倍
         zLoadingView.setColorFilter(Color.WHITE);//设置颜色
@@ -48,10 +68,43 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         mPermissionHelper.requestPermissions();
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         showNotification();
+
+        btnLoad.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadPlugin();
+            }
+        });
+    }
+
+    private String downloadDir = Environment.getExternalStorageDirectory() + "/DianYinBox/plugin";
+    private void downloadApkFile(final String downUrl)
+    {
+        ApkDownLoadManager.getInstance().startDownload(downUrl, downloadDir, this);
+    }
+
+    private void showLoadingView(boolean show)
+    {
+        if(show)
+        {
+            tvStatus.setVisibility(View.VISIBLE);
+            zLoadingView.setVisibility(View.VISIBLE);
+            btnLoad.setVisibility(View.GONE);
+
+        }
+        else
+        {
+            tvStatus.setVisibility(View.GONE);
+            zLoadingView.setVisibility(View.GONE);
+            btnLoad.setVisibility(View.VISIBLE);
+        }
     }
 
     private void loadPlugin()
     {
+        showLoadingView(true);
+        tvStatus.setText("正在加载组建...");
+
         initDirs();
         File file = new File(dirFv.getAbsolutePath() + "/DianYinBox.apk");
         if(file.exists())
@@ -61,18 +114,35 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
             {
                 RePlugin.preload(pluginInfo);//耗时
                 pluginName = pluginInfo.getName();
+                Intent intent = RePlugin.createIntent(pluginName,
+                        "com.znt.speaker.VideoPageActivity");
+                intent.putExtra("ZNT_SOURCE","1");
+                RePlugin.startActivity(MainActivity.this,intent );
             }
             else
             {
+                showLoadingView(false);
                 Toast.makeText(getApplicationContext(),"插件安装失败",Toast.LENGTH_SHORT).show();
                 return;
             }
         }
+        else
+        {
+            if(RePlugin.isPluginInstalled(pluginName))
+            {
+                Intent intent = RePlugin.createIntent(pluginName,
+                        "com.znt.speaker.VideoPageActivity");
+                intent.putExtra("ZNT_SOURCE","1");
+                RePlugin.startActivity(MainActivity.this,intent );
+            }
+            else
+            {
+                downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox_20190105.apk");
+            }
+            //PluginInfo mPluginInfo = RePlugin.getPluginInfo(pluginName);
+        }
 
-        Intent intent = RePlugin.createIntent(pluginName,
-                "com.znt.speaker.VideoPageActivity");
-        intent.putExtra("ZNT_SOURCE","1");
-        RePlugin.startActivity(MainActivity.this,intent );
+
 
     }
 
@@ -112,6 +182,22 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
 
         mNotificationManager.notify(18, notification);
 
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @Override
@@ -178,4 +264,64 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
             dirFv.mkdirs();
     }
 
+    @Override
+    public void onDownloadStart(DownloadFileInfo info) {
+
+    }
+
+    @Override
+    public void onFileExist(DownloadFileInfo info) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                loadPlugin();
+            }
+        });
+
+    }
+
+    @Override
+    public void onDownloadProgress(final long progress, final long size) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                tvStatus.setText("正在下载组建:" + progress +" / " + size);
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onDownloadError(DownloadFileInfo info, String error) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                tvStatus.setText("组建下载失败，请重试");
+                showLoadingView(false);
+            }
+        });
+
+    }
+
+    @Override
+    public void onDownloadFinish(File info) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                loadPlugin();
+            }
+        });
+
+    }
+
+    @Override
+    public void onDownloadExit(DownloadFileInfo info) {
+
+    }
+
+    @Override
+    public void onSpaceCheck(long size) {
+
+    }
 }
