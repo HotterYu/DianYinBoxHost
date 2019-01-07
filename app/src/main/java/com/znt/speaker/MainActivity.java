@@ -8,16 +8,19 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,11 +29,13 @@ import com.qihoo360.replugin.model.PluginInfo;
 import com.znt.speaker.permission.PermissionHelper;
 import com.znt.speaker.update.ApkDownLoadManager;
 import com.znt.speaker.update.ApkDownloadListener;
+import com.znt.speaker.update.ApkTools;
 import com.znt.speaker.update.DownloadFileInfo;
 import com.zyao89.view.zloading.ZLoadingView;
 import com.zyao89.view.zloading.Z_TYPE;
 
 import java.io.File;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements permission.PermissionInterface ,ApkDownloadListener {
 
@@ -43,6 +48,10 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     private  ZLoadingView zLoadingView = null;
     private TextView tvStatus = null;
     private Button btnLoad = null;
+    private Button btnInstallClick = null;
+    private ImageView ivLogo = null;
+
+    private long touchTime = 0;
 
     private Handler mHandler = new Handler()
     {
@@ -57,8 +66,10 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        ivLogo = (ImageView) findViewById(R.id.iv_dy_host_log);
         tvStatus = (TextView) findViewById(R.id.tv_loading_status);
         btnLoad = (Button) findViewById(R.id.btn_start);
+        btnInstallClick = (Button) findViewById(R.id.btn_install_click);
         zLoadingView = (ZLoadingView) findViewById(R.id.loadingView_1);
         zLoadingView.setLoadingBuilder(Z_TYPE.MUSIC_PATH);//设置类型
         // zLoadingView.setLoadingBuilder(Z_TYPE.values()[type], 0.5); //设置类型 + 动画时间百分比 - 0.5倍
@@ -73,6 +84,28 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
             @Override
             public void onClick(View v) {
                 loadPlugin();
+            }
+        });
+        btnInstallClick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                installByClick();
+            }
+        });
+        ivLogo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if((System.currentTimeMillis() - touchTime) < 2000)
+                {
+                    btnInstallClick.setVisibility(View.VISIBLE);
+                    // TODO Auto-generated method stub
+                }
+                else
+                {
+                    Toast.makeText(MainActivity.this, "再点击一次启动手动安装", Toast.LENGTH_SHORT).show();;
+                    touchTime = System.currentTimeMillis();
+                }
             }
         });
     }
@@ -118,6 +151,9 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
                         "com.znt.speaker.VideoPageActivity");
                 intent.putExtra("ZNT_SOURCE","1");
                 RePlugin.startActivity(MainActivity.this,intent );
+
+                tvStatus.setText("加载成功，正在启动...");
+
             }
             else
             {
@@ -137,13 +173,15 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
             }
             else
             {
-                downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox_20190105.apk");
+                downLoadApk();
             }
             //PluginInfo mPluginInfo = RePlugin.getPluginInfo(pluginName);
         }
+    }
 
-
-
+    private void downLoadApk()
+    {
+        downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox_20190105.apk");
     }
 
     final String CHANNEL_ID = "channel_id_1";
@@ -198,6 +236,12 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        showLoadingView(false);
     }
 
     @Override
@@ -264,17 +308,73 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
             dirFv.mkdirs();
     }
 
+    private void installByClick()
+    {
+
+        File apkFile = new File(dirFv.getAbsolutePath() + "/DianYinBox.apk");
+
+        if(apkFile.exists())
+        {
+            if(isSignatureMatch(apkFile))
+            {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    Uri contentUri = FileProvider.getUriForFile(
+                            getApplicationContext()
+                            , "com.znt.speaker.fileprovider"
+                            , apkFile);
+                    intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+                } else {
+
+                    intent.setDataAndType(Uri.fromFile(apkFile), "application/vnd.android.package-archive");
+                }
+                startActivity(intent);
+
+            }
+            else
+                Toast.makeText(getApplicationContext(),"签名不一致，请重试" ,Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(getApplicationContext(),"安装包不存在，开始下载" ,Toast.LENGTH_SHORT).show();
+            downLoadApk();
+        }
+
+    }
+
+    private boolean isSignatureMatch(File apkFile)
+    {
+        String curSign = ApkTools.getSignature(this);
+        List<String> signs = ApkTools.getSignaturesFromApk(apkFile);
+
+        if(curSign == null || signs == null || signs.size() == 0
+                || signs.get(0) == null || !curSign.equals(signs.get(0)))
+        {
+            //apkFile.delete();
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void onDownloadStart(DownloadFileInfo info) {
 
     }
 
     @Override
-    public void onFileExist(DownloadFileInfo info) {
+    public void onFileExist(final DownloadFileInfo info) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                loadPlugin();
+                if(btnInstallClick.isShown())
+                {
+                    btnInstallClick.setText("开始安装");
+                }
+                else
+                    loadPlugin();
             }
         });
 
@@ -285,11 +385,14 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                tvStatus.setText("正在下载组建:" + progress +" / " + size);
+                if(btnInstallClick.isShown())
+                {
+                    btnInstallClick.setText("下载:" + progress +" / " + size);
+                }
+                else
+                    tvStatus.setText("正在下载组建:" + progress +" / " + size);
             }
         });
-
-
     }
 
     @Override
@@ -305,11 +408,17 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     }
 
     @Override
-    public void onDownloadFinish(File info) {
+    public void onDownloadFinish(final File info) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                loadPlugin();
+                if(btnInstallClick.isShown())
+                {
+                    if(info.exists())
+                        btnInstallClick.setText("开始安装");
+                }
+                else
+                    loadPlugin();
             }
         });
 
