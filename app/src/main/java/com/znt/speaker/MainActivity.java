@@ -1,6 +1,7 @@
 package com.znt.speaker;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -18,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -77,6 +79,9 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
 
         mPermissionHelper = new PermissionHelper(this, this);
         mPermissionHelper.requestPermissions();
+
+        loadPlugin();
+
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         showNotification();
 
@@ -181,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
 
     private void downLoadApk()
     {
-        downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox_20190105.apk");
+        downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox.apk");
     }
 
     final String CHANNEL_ID = "channel_id_1";
@@ -290,8 +295,36 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     @Override
     public void requestPermissionsFail() {
         //权限请求不被用户允许。可以提示并退出或者提示权限的用途并重新发起权限申请。
-        mPermissionHelper.requestPermissions();
-        close();
+        showPermissions();
+        //mPermissionHelper.requestPermissions();
+        //close();
+    }
+
+    private void showPermissions(){
+        final Dialog dialog=new android.app.AlertDialog.Builder(this).create();
+        View v=LayoutInflater.from(this).inflate(R.layout.dialog_permissions,null);
+        dialog.show();
+        dialog.setContentView(v);
+
+        Button btn_add= (Button) v.findViewById(R.id.btn_add);
+        Button btn_diss= (Button) v.findViewById(R.id.btn_diss);
+
+        btn_add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mPermissionHelper.toPermissionSetting(MainActivity.this);
+                dialog.dismiss();
+                close();
+            }
+        });
+
+        btn_diss.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+                close();
+            }
+        });
     }
 
     private void close()

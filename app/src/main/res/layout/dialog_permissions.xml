@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="250dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@color/white"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
+        android:text="警告"
+        android:background="@color/text_blue_on"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
+
+
+    <TextView
+        android:id="@+id/tv_hint"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_blue_on"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:textSize="16sp"
+        android:gravity="center"
+        android:lineSpacingExtra="3dp"
+        android:text="需要打开本地读取和定位权限才能使用"/>
+
+    <TextView
+        android:id="@+id/tv_hint2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="@color/spacebar"
+        android:layout_margin="10dp"
+        android:gravity="center"
+        android:lineSpacingExtra="1dp"
+        android:text=""/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btn_diss"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="44dp"
+            android:background="@color/white"
+            android:text="取消"
+            />
+        <Button
+            android:id="@+id/btn_add"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="44dp"
+            android:layout_gravity="center"
+            android:background="@color/text_blue_on"
+            android:text="去设置"
+            android:layout_marginLeft="20dp"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
+
+</LinearLayout>

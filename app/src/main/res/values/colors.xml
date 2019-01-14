@@ -13,10 +13,28 @@
 
     <color name="bottom_back_disable_color">#7f45b9f6</color>
 
-    <color name="transparent">#00ffffff</color>
     <color name="translucent_background">#10000000</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="red">#F44336</color>
     <color name="white">@android:color/white</color>
+
+    <color name="spacebar">#f3f3f3</color>
+    <color name="spacebar_0">#e6e6e6</color>
+    <color name="spacebar_1">#d0d0d0</color>
+    <color name="translucent">#b0000000</color>
+
+    <color name="main_bg">#ec6400</color>
+    <color name="main_bottom_controll_bg">#f8f8f8</color>
+    <color name="progress_bg">#d8d8d8</color>
+    <color name="center_bg">#f3f3f3</color>
+    <color name="dialog_bg">#f1f1f1</color>
+    <color name="text_black_off">#8d8d8d</color>
+    <color name="text_black_mid">#555555</color>
+    <color name="text_black_on">#000000</color>
+    <color name="text_blue_on">#ec6400</color>
+    <color name="text_blue_off">#fb967b</color>
+    <color name="text_bg">#50000000</color>
+    <color name="bottom_bg">#fcfcfc</color>
+
 </resources>
