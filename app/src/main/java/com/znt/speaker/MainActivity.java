@@ -39,7 +39,7 @@ import com.zyao89.view.zloading.Z_TYPE;
 import java.io.File;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements permission.PermissionInterface ,ApkDownloadListener {
+public class MainActivity extends AppCompatActivity implements permission.PermissionInterface,ApkDownloadListener {
 
     private String pluginName = "com.znt.speaker";
 
