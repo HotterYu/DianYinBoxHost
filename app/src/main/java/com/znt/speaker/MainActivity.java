@@ -115,7 +115,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         });
     }
 
-    private String downloadDir = Environment.getExternalStorageDirectory() + "/DianYinBox/plugin";
+    private String downloadDir = Environment.getExternalStorageDirectory() + "/DianYinBox/update";
     private void downloadApkFile(final String downUrl)
     {
         ApkDownLoadManager.getInstance().startDownload(downUrl, downloadDir, this);
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         tvStatus.setText("正在加载组建...");
 
         initDirs();
-        File file = new File(dirFv.getAbsolutePath() + "/DianYinBox.apk");
+        File file = new File(downloadDir + "/DianYinBox.apk");
         if(file.exists())
         {
             PluginInfo pluginInfo = RePlugin.install(file.getAbsolutePath());
@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
                 RePlugin.startActivity(MainActivity.this,intent );
 
                 tvStatus.setText("加载成功，正在启动...");
+                finish();
 
             }
             else
@@ -175,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
                         "com.znt.speaker.VideoPageActivity");
                 intent.putExtra("ZNT_SOURCE","1");
                 RePlugin.startActivity(MainActivity.this,intent );
+                finish();
             }
             else
             {
@@ -332,11 +334,9 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
         System.exit(0);
     }
 
-    private File dirFv = null;
     private void initDirs()
     {
-        dirFv = new File(Environment.getExternalStorageDirectory() + "/DianYinBox/plugin");
-
+        File dirFv = new File(downloadDir);
         if(!dirFv.exists())
             dirFv.mkdirs();
     }
@@ -344,7 +344,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
     private void installByClick()
     {
 
-        File apkFile = new File(dirFv.getAbsolutePath() + "/DianYinBox.apk");
+        File apkFile = new File(downloadDir + "/DianYinBox.apk");
 
         if(apkFile.exists())
         {
