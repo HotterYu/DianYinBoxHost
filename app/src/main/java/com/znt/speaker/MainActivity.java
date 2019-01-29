@@ -23,12 +23,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.qihoo360.replugin.RePlugin;
 import com.qihoo360.replugin.model.PluginInfo;
-import com.znt.speaker.permission.PermissionHelper;
 import com.znt.speaker.update.ApkDownLoadManager;
 import com.znt.speaker.update.ApkDownloadListener;
 import com.znt.speaker.update.ApkTools;
@@ -39,7 +39,7 @@ import com.zyao89.view.zloading.Z_TYPE;
 import java.io.File;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements permission.PermissionInterface,ApkDownloadListener {
+public class MainActivity extends AppCompatActivity implements PermissionInterface,ApkDownloadListener {
 
     private String pluginName = "com.znt.speaker";
 
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
 
     private  ZLoadingView zLoadingView = null;
     private TextView tvStatus = null;
+    private ProgressBar progressBar = null;
     private Button btnLoad = null;
     private Button btnInstallClick = null;
     private ImageView ivLogo = null;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
 
         ivLogo = (ImageView) findViewById(R.id.iv_dy_host_log);
         tvStatus = (TextView) findViewById(R.id.tv_loading_status);
+        progressBar = (ProgressBar)findViewById(R.id.pb_download);
         btnLoad = (Button) findViewById(R.id.btn_start);
         btnInstallClick = (Button) findViewById(R.id.btn_install_click);
         zLoadingView = (ZLoadingView) findViewById(R.id.loadingView_1);
@@ -424,6 +426,8 @@ public class MainActivity extends AppCompatActivity implements permission.Permis
                 }
                 else
                     tvStatus.setText("正在下载组建:" + progress +" / " + size);
+                progressBar.setMax((int) size);
+                progressBar.setProgress((int) progress);
             }
         });
     }

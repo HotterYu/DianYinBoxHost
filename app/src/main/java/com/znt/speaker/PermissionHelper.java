@@ -1,4 +1,4 @@
-package com.znt.speaker.permission;
+package com.znt.speaker;
 
 import android.app.Activity;
 import android.content.Context;
@@ -12,9 +12,9 @@ public class PermissionHelper
 {
 
     private Activity mActivity;
-    private permission.PermissionInterface mPermissionInterface;
+    private PermissionInterface mPermissionInterface;
 
-    public PermissionHelper(@NonNull Activity activity, @NonNull permission.PermissionInterface permissionInterface) {
+    public PermissionHelper(@NonNull Activity activity, @NonNull PermissionInterface permissionInterface) {
         mActivity = activity;
         mPermissionInterface = permissionInterface;
     }
@@ -25,9 +25,9 @@ public class PermissionHelper
      * 如果设备还不是M或以上版本，则也会回调到requestPermissionsSuccess方法。
      */
     public void requestPermissions(){
-        String[] deniedPermissions = permission.PermissionUtil.getDeniedPermissions(mActivity, mPermissionInterface.getPermissions());
+        String[] deniedPermissions = PermissionUtil.getDeniedPermissions(mActivity, mPermissionInterface.getPermissions());
         if(deniedPermissions != null && deniedPermissions.length > 0){
-            permission.PermissionUtil.requestPermissions(mActivity, deniedPermissions, mPermissionInterface.getPermissionsRequestCode());
+            PermissionUtil.requestPermissions(mActivity, deniedPermissions, mPermissionInterface.getPermissionsRequestCode());
         }else{
             mPermissionInterface.requestPermissionsSuccess();
         }

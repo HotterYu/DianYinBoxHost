@@ -18,8 +18,8 @@ android {
         applicationId "com.znt.speaker"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 20190112
-        versionName "V2019.01.12"
+        versionCode 20190129
+        versionName "P2019.01.29"
         signingConfig signingConfigs.config
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -64,7 +64,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    implementation 'com.qihoo360.replugin:replugin-host-lib:2.3.0'
+    implementation 'com.qihoo360.replugin:replugin-host-lib:2.2.4'
 
     implementation 'tv.danmaku.ijk.media:ijkplayer-java:0.8.8'
     implementation 'tv.danmaku.ijk.media:ijkplayer-armv7a:0.8.8'

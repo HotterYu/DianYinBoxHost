@@ -1,4 +1,4 @@
-package permission;
+package com.znt.speaker;
 
 import android.app.Activity;
 import android.content.Context;

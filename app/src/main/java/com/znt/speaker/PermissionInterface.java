@@ -1,4 +1,4 @@
-package permission;
+package com.znt.speaker;
 
 public interface  PermissionInterface
 {

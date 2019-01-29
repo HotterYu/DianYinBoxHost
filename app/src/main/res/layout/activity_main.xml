@@ -84,6 +84,14 @@
             android:layout_gravity="center_horizontal"
             android:text="正在加载店音播放器..."
             android:textColor="#ffffff"/>
+        <ProgressBar
+            android:id="@+id/pb_download"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            style="?android:attr/progressBarStyleHorizontal"
+
+            />
 
     </LinearLayout>
 
