@@ -33,6 +33,8 @@ import com.znt.speaker.update.ApkDownLoadManager;
 import com.znt.speaker.update.ApkDownloadListener;
 import com.znt.speaker.update.ApkTools;
 import com.znt.speaker.update.DownloadFileInfo;
+import com.znt.speaker.utils.NetWorkUtils;
+import com.znt.speaker.utils.ViewUtils;
 import com.zyao89.view.zloading.ZLoadingView;
 import com.zyao89.view.zloading.Z_TYPE;
 
@@ -56,10 +58,21 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
 
     private long touchTime = 0;
 
+    private final int MSG_PLUGIN_LOAD_START = 1;
+    private final int MSG_PLUGIN_LOAD_FINISH = 2;
     private Handler mHandler = new Handler()
     {
         @Override
         public void handleMessage(Message msg) {
+
+            if(msg.what == MSG_PLUGIN_LOAD_START)
+            {
+                tvStatus.setText("正在加载店音播放器组件...");
+            }
+            else if(msg.what == MSG_PLUGIN_LOAD_FINISH)
+            {
+                openPlugin();
+            }
             super.handleMessage(msg);
         }
     };
@@ -81,8 +94,6 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
 
         mPermissionHelper = new PermissionHelper(this, this);
         mPermissionHelper.requestPermissions();
-
-        loadPlugin();
 
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         showNotification();
@@ -143,25 +154,24 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     private void loadPlugin()
     {
         showLoadingView(true);
-        tvStatus.setText("正在加载组建...");
+        tvStatus.setText("正在下载组建...");
 
         initDirs();
         File file = new File(downloadDir + "/DianYinBox.apk");
         if(file.exists())
         {
-            PluginInfo pluginInfo = RePlugin.install(file.getAbsolutePath());
+            final PluginInfo pluginInfo = RePlugin.install(file.getAbsolutePath());
             if(pluginInfo != null)
             {
-                RePlugin.preload(pluginInfo);//耗时
-                pluginName = pluginInfo.getName();
-                Intent intent = RePlugin.createIntent(pluginName,
-                        "com.znt.speaker.VideoPageActivity");
-                intent.putExtra("ZNT_SOURCE","1");
-                RePlugin.startActivity(MainActivity.this,intent );
-
-                tvStatus.setText("加载成功，正在启动...");
-                finish();
-
+                ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_START);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        RePlugin.preload(pluginInfo);//耗时
+                        pluginName = pluginInfo.getName();
+                        ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_FINISH);
+                    }
+                }).start();
             }
             else
             {
@@ -174,18 +184,28 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         {
             if(RePlugin.isPluginInstalled(pluginName))
             {
-                Intent intent = RePlugin.createIntent(pluginName,
-                        "com.znt.speaker.VideoPageActivity");
-                intent.putExtra("ZNT_SOURCE","1");
-                RePlugin.startActivity(MainActivity.this,intent );
-                finish();
+                openPlugin();
             }
-            else
+            else if(NetWorkUtils.isNetConnected(this))
             {
                 downLoadApk();
             }
-            //PluginInfo mPluginInfo = RePlugin.getPluginInfo(pluginName);
+            else
+            {
+                RePlugin.preload(pluginName);
+                openPlugin();
+            }
         }
+    }
+
+    private void openPlugin()
+    {
+        Intent intent = RePlugin.createIntent(pluginName,
+                "com.znt.speaker.VideoPageActivity");
+        intent.putExtra("ZNT_SOURCE","1");
+        RePlugin.startActivity(MainActivity.this,intent );
+        finish();
+
     }
 
     private void downLoadApk()
@@ -300,7 +320,6 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     public void requestPermissionsFail() {
         //权限请求不被用户允许。可以提示并退出或者提示权限的用途并重新发起权限申请。
         showPermissions();
-        //mPermissionHelper.requestPermissions();
         //close();
     }
 
