@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
         ivLogo = (ImageView) findViewById(R.id.iv_dy_host_log);
@@ -95,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         mPermissionHelper = new PermissionHelper(this, this);
         mPermissionHelper.requestPermissions();
 
-        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         showNotification();
 
         btnLoad.setOnClickListener(new View.OnClickListener() {
@@ -192,8 +192,14 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
             }
             else
             {
-                RePlugin.preload(pluginName);
-                openPlugin();
+                ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_START);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        RePlugin.preload(pluginName);
+                        ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_FINISH);
+                    }
+                }).start();
             }
         }
     }
@@ -217,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     final String CHANNEL_NAME = "channel_name_1";
     private void showNotification()
     {
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
         {
             //只在Android O之上需要渠道
