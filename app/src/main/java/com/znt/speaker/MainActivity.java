@@ -206,12 +206,25 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
 
     private void openPlugin()
     {
-        Intent intent = RePlugin.createIntent(pluginName,
-                "com.znt.speaker.VideoPageActivity");
-        intent.putExtra("ZNT_SOURCE","1");
-        RePlugin.startActivity(MainActivity.this,intent );
-        finish();
 
+        tvStatus.setText("正在进入软件，请稍后...");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try
+                {
+                    Intent intent = RePlugin.createIntent(pluginName,"com.znt.speaker.VideoPageActivity");
+                    intent.putExtra("ZNT_SOURCE","1");
+                    RePlugin.startActivity(MainActivity.this,intent );
+                    finish();
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     private void downLoadApk()
