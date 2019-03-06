@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.qihoo360.replugin.RePlugin;
 import com.qihoo360.replugin.model.PluginInfo;
+import com.znt.speaker.localdata.LocalDataEntity;
 import com.znt.speaker.update.ApkDownLoadManager;
 import com.znt.speaker.update.ApkDownloadListener;
 import com.znt.speaker.update.ApkTools;
@@ -214,8 +215,10 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
             public void run() {
                 try
                 {
+                    String oldId = LocalDataEntity.newInstance(MainActivity.this).getOldDeviceId();
                     Intent intent = RePlugin.createIntent(pluginName,"com.znt.speaker.VideoPageActivity");
                     intent.putExtra("ZNT_SOURCE","1");
+                    intent.putExtra("ZNT_OLD_ID",oldId);
                     RePlugin.startActivity(MainActivity.this,intent );
                     finish();
                 }
