@@ -71,6 +71,13 @@
             </intent-filter>
         </receiver>
 
+        <!-- 高德定位设置key -->
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="3255cc695fa528640451b77e01c2de3d" />
+        <!-- 定位需要的服务 -->
+        <service android:name="com.amap.api.location.APSService" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.znt.speaker.fileprovider"
