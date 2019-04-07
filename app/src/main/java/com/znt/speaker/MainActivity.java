@@ -193,14 +193,17 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
             }
             else
             {
-                ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_START);
+
+                Toast.makeText(getApplicationContext(),"请先连接网络重试",Toast.LENGTH_SHORT).show();
+                showLoadingView(false);
+                /*ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_START);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         RePlugin.preload(pluginName);
                         ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_FINISH);
                     }
-                }).start();
+                }).start();*/
             }
         }
     }
