@@ -94,7 +94,6 @@ public class ApkDownloadTask extends AsyncTask<String,Long,DownLoadResult>
             tempFile.delete();
             //downloadLength = tempFile.length();
         }
-        
 
         OkHttpClient client = new OkHttpClient();
 
@@ -141,7 +140,6 @@ public class ApkDownloadTask extends AsyncTask<String,Long,DownLoadResult>
                 
                 if(tempFile.exists() && getTempFile(file).length() == contentLength)
                 {
-
                 	downLoadResult.file = renameFile(tempFile);
                 }
                 else

@@ -108,25 +108,10 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         btnInstallClick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                installByClick();
+                loadPlugin();
             }
         });
-        ivLogo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                if((System.currentTimeMillis() - touchTime) < 2000)
-                {
-                    btnInstallClick.setVisibility(View.VISIBLE);
-                    // TODO Auto-generated method stub
-                }
-                else
-                {
-                    Toast.makeText(MainActivity.this, "再点击一次启动手动安装", Toast.LENGTH_SHORT).show();;
-                    touchTime = System.currentTimeMillis();
-                }
-            }
-        });
     }
 
     private String downloadDir = Environment.getExternalStorageDirectory() + "/DianYinBox/update";
@@ -146,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         }
         else
         {
-            tvStatus.setVisibility(View.GONE);
+            tvStatus.setVisibility(View.VISIBLE);
             zLoadingView.setVisibility(View.GONE);
             btnLoad.setVisibility(View.VISIBLE);
         }
@@ -155,12 +140,11 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     private void loadPlugin()
     {
         showLoadingView(true);
-        tvStatus.setText("正在下载组建...");
-
         initDirs();
         File file = new File(downloadDir + "/DianYinBox.apk");
         if(file.exists())
         {
+            tvStatus.setText("正在加载本地插件...");
             final PluginInfo pluginInfo = RePlugin.install(file.getAbsolutePath());
             if(pluginInfo != null)
             {
@@ -177,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
             else
             {
                 showLoadingView(false);
-                Toast.makeText(getApplicationContext(),"插件安装失败",Toast.LENGTH_SHORT).show();
+                tvStatus.setText("插件加载失败");
                 return;
             }
         }
@@ -185,25 +169,18 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         {
             if(RePlugin.isPluginInstalled(pluginName))
             {
+                tvStatus.setText("正在打开插件...");
                 openPlugin();
             }
             else if(NetWorkUtils.isNetConnected(this))
             {
+                tvStatus.setText("正在下载插件...");
                 downLoadApk();
             }
             else
             {
-
-                Toast.makeText(getApplicationContext(),"请先连接网络重试",Toast.LENGTH_SHORT).show();
+                tvStatus.setText("请先连接网络重试");
                 showLoadingView(false);
-                /*ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_START);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        RePlugin.preload(pluginName);
-                        ViewUtils.sendMessage(mHandler,MSG_PLUGIN_LOAD_FINISH);
-                    }
-                }).start();*/
             }
         }
     }
@@ -225,17 +202,25 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
                     RePlugin.startActivity(MainActivity.this,intent );
                     finish();
                 }
-                catch (Exception e)
+                catch (final Exception e)
                 {
                     e.printStackTrace();
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvStatus.setText("启动插件失败:"+(e==null?"":e.getMessage()));
+                        }
+                    });
                 }
             }
         }).start();
     }
 
+    private String apkUrl = "http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox.apk";
+    //private String apkUrl = "http://www.baidu.com";
     private void downLoadApk()
     {
-        downloadApkFile("http://zhunit-music.oss-cn-shenzhen.aliyuncs.com/apk2/DianYinBox.apk");
+        downloadApkFile(apkUrl);
     }
 
     final String CHANNEL_ID = "channel_id_1";
@@ -334,10 +319,7 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
         }
         catch (Exception e)
         {
-            if(e == null)
-                Toast.makeText(getApplicationContext(),"插件安装失败",Toast.LENGTH_SHORT).show();
-            else
-                Toast.makeText(getApplicationContext(),"初始化失败："+e.getMessage(),Toast.LENGTH_SHORT).show();
+            tvStatus.setText("加载插件失败:"+(e==null?"":e.getMessage()));
             e.printStackTrace();
         }
     }
@@ -478,11 +460,11 @@ public class MainActivity extends AppCompatActivity implements PermissionInterfa
     }
 
     @Override
-    public void onDownloadError(DownloadFileInfo info, String error) {
+    public void onDownloadError(DownloadFileInfo info, final String error) {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                tvStatus.setText("组建下载失败，请重试");
+                tvStatus.setText("组建下载失败:"+error);
                 showLoadingView(false);
             }
         });
