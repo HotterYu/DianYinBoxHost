@@ -107,7 +107,9 @@ public class ApkDownloadTask extends AsyncTask<String,Long,DownLoadResult>
             if(response!=null)
             {
                 is = response.body().byteStream();
-                
+                if(!tempFile.exists())
+                    tempFile.createNewFile();
+
                 savedFile = new RandomAccessFile(tempFile,"rw");
                 //savedFile.seek(downloadLength);
                 byte[] b = new byte[1024 * 2];
